@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - include:
+      file: liquibase/changes/2026-10-22-create-speakers-table.sql
+  - include:
+      file: liquibase/changes/2026-10-22-create-talks-table.sql
+  - include:
+      file: liquibase/changes/2026-10-22-insert-speakers.sql
+  - include:
+      file: liquibase/changes/2026-10-22-insert-talks.sql
+  - include:
+      file: liquibase/changes/2026-10-22-update-speaker-data.sql
+  - include:
+      file: liquibase/changes/2026-10-22-delete-talk-data.sql
+  - include:
+      file: liquibase/changes/2026-10-22-drop-temp-table.sql
