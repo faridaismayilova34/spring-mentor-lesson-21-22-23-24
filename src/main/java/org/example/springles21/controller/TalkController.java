@@ -1,7 +1,6 @@
 package org.example.springles21.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -13,13 +12,11 @@ import lombok.RequiredArgsConstructor;
 import org.example.springles21.dto.request.TalkRequestDto;
 import org.example.springles21.dto.response.TalkResponseDto;
 import org.example.springles21.service.TalkService;
-import org.example.springles21.service.impl.TalkServiceImpl;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Validated
 @RestController
@@ -43,18 +40,42 @@ public class TalkController {
         return new ResponseEntity<>(talkService.createTalk(requestDto), HttpStatus.CREATED);
     }
 
-
     @GetMapping
-    @Operation(summary = "Get all talks", description = "Retrieves a list of all scheduled talks")
+    @Operation(summary = "Get all talks (paged)",
+            description = "Returns a page of talks. size: 1-50, sortBy: title | room | durationMinutes, direction: asc | desc")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Talks retrieved successfully",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = TalkResponseDto.class)))),
+            @ApiResponse(responseCode = "200", description = "Talks retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid page, size, sortBy or direction"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    public ResponseEntity<List<TalkResponseDto>> getAllTalks() {
-        return ResponseEntity.ok(talkService.getAllTalks());
+    public ResponseEntity<Page<TalkResponseDto>> getAllTalks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "title") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction) {
+        return ResponseEntity.ok(talkService.getAllTalks(page, size, sortBy, direction));
     }
 
+    @GetMapping("/search")
+    @Operation(summary = "Search talks",
+            description = "Optional filters: title (contains), room (exact), minDuration, maxDuration. Paging params as in GET /api/talks")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Matching talks retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid paging params or minDuration > maxDuration"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<Page<TalkResponseDto>> searchTalks(
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String room,
+            @RequestParam(required = false) Integer minDuration,
+            @RequestParam(required = false) Integer maxDuration,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "title") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction) {
+        return ResponseEntity.ok(talkService.searchTalks(title, room, minDuration, maxDuration,
+                page, size, sortBy, direction));
+    }
 
     @GetMapping("/{id}")
     @Operation(summary = "Get talk by ID", description = "Retrieves details of a talk by its ID")

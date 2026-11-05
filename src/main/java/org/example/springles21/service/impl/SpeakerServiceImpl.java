@@ -14,12 +14,14 @@ import org.example.springles21.repository.SpeakerRepository;
 import org.example.springles21.repository.TalkRepository;
 import org.example.springles21.service.SpeakerService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class SpeakerServiceImpl implements SpeakerService {
 
     private final SpeakerRepository speakerRepository;
@@ -28,6 +30,7 @@ public class SpeakerServiceImpl implements SpeakerService {
     private final TalkMapper talkMapper;
 
     @Override
+    @Transactional
     public SpeakerResponseDto createSpeaker(SpeakerRequestDto requestDto) {
         if (speakerRepository.existsByEmail(requestDto.getEmail())) {
             log.warn("Speaker creation failed: email {} already exists", requestDto.getEmail());
